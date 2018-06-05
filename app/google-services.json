@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "359853028813",
+    "firebase_url": "https://dreamteams-79b38.firebaseio.com",
+    "project_id": "dreamteams-79b38",
+    "storage_bucket": "dreamteams-79b38.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:359853028813:android:a7221d3bad55f14e",
+        "android_client_info": {
+          "package_name": "kr.co.dreamteams.dreamteams_android2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "359853028813-ds0oacripana8m1pre5sjl58dalsvsqj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiuyo8N0XfnGRyG2PwzRPT4xRb7T6nMIk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
