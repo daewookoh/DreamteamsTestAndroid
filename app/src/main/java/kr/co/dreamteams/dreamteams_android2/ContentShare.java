@@ -26,7 +26,7 @@ public class ContentShare extends Activity {
 
     private Context mContext;
     private ShareDialog mShareDialog;
-    Common common = new Common(this);
+    Common common = new Common(MainActivity.mContext);
 
     public void start(Context context, String data, ShareDialog shareDialog) throws JSONException {
         mContext = context;
@@ -37,11 +37,8 @@ public class ContentShare extends Activity {
         }
 
         JSONObject jObject = null;
-        try {
-            jObject = new JSONObject(data);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        jObject = new JSONObject(data);
+
         String share_type = jObject.getString("share_type");
         String img_url = jObject.getString("img_url");
         String link_url = jObject.getString("link_url");
@@ -76,6 +73,7 @@ public class ContentShare extends Activity {
                 break;
 
         }
+
     }
 
     //카카오톡 공유
