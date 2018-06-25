@@ -13,13 +13,20 @@ import com.facebook.share.model.ShareLinkContent;
 import com.facebook.share.widget.ShareDialog;
 import com.kakao.kakaolink.KakaoLink;
 import com.kakao.kakaolink.KakaoTalkLinkMessageBuilder;
+import com.kakao.kakaolink.v2.KakaoLinkResponse;
+import com.kakao.kakaolink.v2.KakaoLinkService;
+import com.kakao.network.ErrorResult;
+import com.kakao.network.callback.ResponseCallback;
 import com.kakao.util.KakaoParameterException;
+import com.kakao.util.helper.log.Logger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 //sns공유
 public class ContentShare extends Activity {
@@ -80,22 +87,23 @@ public class ContentShare extends Activity {
     private void shareKakaoTalk(String title, String content, String link_url, String img_url) {
         common.log("shareKakaoTalk()");
 
-        try {
-            final KakaoLink kakaoLink = KakaoLink.getKakaoLink(mContext);
-            final KakaoTalkLinkMessageBuilder kakaoBuilder = kakaoLink.createKakaoTalkLinkMessageBuilder();
+        String templateId = "10642";
+        Map<String, String> templateArgs = new HashMap<>();
+        templateArgs.put("${title}", title.replace("\n","      "));
+        templateArgs.put("${description}", content);
+        templateArgs.put("${image_url}", img_url);
 
-            kakaoBuilder.addText(title + "\n\n" + content + "\n\n" + link_url);
-
-            if(!img_url.isEmpty()) {
-                kakaoBuilder.addImage(img_url, 640, 640);
+        KakaoLinkService.getInstance().sendCustom(mContext, templateId, templateArgs, new ResponseCallback<KakaoLinkResponse>(){
+            @Override
+            public void onFailure(ErrorResult errorResult) {
+                Logger.e(errorResult.toString());
             }
 
-            kakaoBuilder.addAppButton(mContext.getString(R.string.app_name));
+            @Override
+            public void onSuccess(KakaoLinkResponse result) {
 
-            kakaoLink.sendMessage(kakaoBuilder, mContext);
-        } catch (KakaoParameterException e) {
-            e.printStackTrace();
-        }
+            }
+        });
     }
 
     //카카오스토리 공유
