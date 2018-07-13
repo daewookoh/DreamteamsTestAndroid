@@ -11,8 +11,10 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
@@ -25,6 +27,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.facebook.share.widget.ShareDialog;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.kakao.auth.AuthType;
 import com.kakao.auth.ISessionCallback;
 import com.kakao.auth.Session;
@@ -174,6 +177,11 @@ public class MainActivity extends Activity {
                 super.onPageFinished(view, url);
                 progressBar.setVisibility(View.INVISIBLE);
                 refreshLayout.setRefreshing(false);
+
+                if(common.getSP("app_start_yn") == "Y")
+                {
+                    sendDeviceInfo();
+                }
             }
 
             public void onReceivedError(WebView view, int errorCode,
@@ -529,5 +537,49 @@ public class MainActivity extends Activity {
         } else {
             finish();
         }
+    }
+
+    public void sendDeviceInfo(){
+
+        String device_id;
+        String device_token;
+        String device_model;
+        String app_version;
+
+        common.putSP("app_start_yn","N");
+        device_id = common.getSP("device_id");
+
+        if(device_id.isEmpty())
+        {
+            String new_device_id = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+            String new_device_token = FirebaseInstanceId.getInstance().getToken();
+            String new_device_model = Build.BRAND + "/" + Build.MODEL + "/" + Build.ID + "/" + Build.VERSION.RELEASE;
+            String new_app_version = BuildConfig.VERSION_NAME;
+
+            common.putSP("device_id", new_device_id);
+            common.putSP("device_token", new_device_token);
+            common.putSP("device_model", new_device_model);
+            common.putSP("app_version", new_app_version);
+        }
+
+        device_id = common.getSP("device_id");
+        device_token = common.getSP("device_token");
+        device_model = common.getSP("device_model");
+        app_version = common.getSP("app_version");
+
+
+        String data = "act=setAppDeviceInfo&device_type=Android"
+                + "&device_id="+device_id
+                + "&device_token="+device_token
+                +"&device_model="+device_model
+                +"&app_version="+app_version;
+
+        String enc_data = Base64.encodeToString(data.getBytes(), 0);
+
+        common.log("jsNativeToServer(enc_data)");
+        webView.loadUrl("javascript:jsNativeToServer('" + enc_data + "')");
+
+        return;
+
     }
 }

@@ -19,14 +19,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:scaleType="fitXY"
-            android:src="@mipmap/ic_launcher" />
-
-        <WebView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/webViewIntro"
-            android:visibility="invisible"
-            android:layout_gravity="center_horizontal" />
+            android:src="@mipmap/dreamteams_intro_android" />
 
     </LinearLayout>
 
