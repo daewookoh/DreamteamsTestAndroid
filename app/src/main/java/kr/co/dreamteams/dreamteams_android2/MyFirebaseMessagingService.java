@@ -44,10 +44,10 @@ public class MyFirebaseMessagingService extends com.google.firebase.messaging.Fi
         Map<String, String> data = remoteMessage.getData();
 
         //you can get your text message here.
-        String msg= data.get("msg");
+        String body= data.get("body");
         String title= data.get("title");
 
-        NotificationCompat.Builder mBuilder = createNotification(title, msg);
+        NotificationCompat.Builder mBuilder = createNotification(title, body);
         mBuilder.setContentIntent(createPendingIntent());
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -78,14 +78,14 @@ public class MyFirebaseMessagingService extends com.google.firebase.messaging.Fi
      * 노티피케이션 빌드
      * @return
      */
-    private NotificationCompat.Builder createNotification(String title, String msg){
+    private NotificationCompat.Builder createNotification(String title, String body){
         String channelId = "CHANNEL_ID";
         Bitmap icon = BitmapFactory.decodeResource(getResources(), R.mipmap.icon);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.mipmap.icon)
                 .setLargeIcon(icon)
                 .setContentTitle(title)
-                .setContentText(msg)
+                .setContentText(body)
                 .setSmallIcon(R.mipmap.icon/*스와이프 전 아이콘*/)
                 .setAutoCancel(true)
                 .setWhen(System.currentTimeMillis())
