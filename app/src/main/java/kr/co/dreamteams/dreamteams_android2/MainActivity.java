@@ -1,11 +1,17 @@
 package kr.co.dreamteams.dreamteams_android2;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -14,6 +20,7 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -49,6 +56,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import static android.content.ContentValues.TAG;
 
@@ -59,6 +68,12 @@ public class MainActivity extends Activity {
     SwipeRefreshLayout refreshLayout;
     public static Context mContext;
     Common common = new Common(this);
+
+    //만보기
+    BroadcastReceiver receiver;
+    String serviceData;
+    Intent manboService;
+    String step_record_date;
 
     //네이버로그인
     public static OAuthLogin mOAuthLoginModule;
@@ -88,6 +103,14 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         mContext = this;
 
+        //만보기
+        receiver = new PlayingReceiver();
+        IntentFilter mainFilter = new IntentFilter("make.a.yong.manbo");
+        manboService = new Intent(this, StepCheckService.class);
+        registerReceiver(receiver, mainFilter);
+        startService(manboService);
+
+
         webView = (WebView) findViewById(R.id.webViewMain);
         progressBar = (ProgressBar) findViewById(R.id.progressBarMain);
         refreshLayout = (SwipeRefreshLayout) findViewById(R.id.refreshMain);
@@ -114,6 +137,46 @@ public class MainActivity extends Activity {
         // 카카오로그인
         callback = new SessionCallback();
         Session.getCurrentSession().addCallback(callback);
+    }
+
+    class PlayingReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i("PlayignReceiver", "IN");
+            serviceData = intent.getStringExtra("stepService");
+            common.log(serviceData);
+
+            if(Integer.parseInt(serviceData)%10==0) {
+
+                long now = System.currentTimeMillis();
+                Date date = new Date(now);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                //SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmm");
+                String today = sdf.format(date);
+
+                common.log(today);
+
+                step_record_date =  common.getSP("step_record_date");
+
+                if(!step_record_date.equals(today)){
+                    common.putSP("step_record_date", today);
+                    StepValue.Step = 0;
+                    StepCheckService.count = 0;
+                }
+
+                String step_data = "{\"" + today + "\":" + serviceData + "}";
+
+                String data = "act=setStepInfo&step_data="+step_data;
+
+                String enc_data = Base64.encodeToString(data.getBytes(), 0);
+
+                common.log("jsNativeToServer(enc_data)");
+                webView.loadUrl("javascript:jsNativeToServer('" + enc_data + "')");
+            }
+
+
+            //Toast.makeText(getApplicationContext(), "Playing game", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void setWebview(final WebView webView)
@@ -568,7 +631,7 @@ public class MainActivity extends Activity {
         app_version = common.getSP("app_version");
 
 
-        String data = "act=setAppDeviceInfo&device_type=Android"
+        String data = "act=setAppDeviceInfo&app_name=dreamteams&device_type=Android"
                 + "&device_id="+device_id
                 + "&device_token="+device_token
                 +"&device_model="+device_model
