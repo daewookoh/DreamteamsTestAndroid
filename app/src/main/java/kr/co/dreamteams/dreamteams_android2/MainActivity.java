@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
@@ -48,6 +49,7 @@ import com.nhn.android.naverlogin.OAuthLogin;
 import com.nhn.android.naverlogin.OAuthLoginHandler;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
@@ -58,6 +60,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
 
 import static android.content.ContentValues.TAG;
 
@@ -146,36 +149,17 @@ public class MainActivity extends Activity {
             serviceData = intent.getStringExtra("stepService");
             common.log(serviceData);
 
-            if(Integer.parseInt(serviceData)%10==0) {
+            final Toast toast = Toast.makeText(getApplicationContext(), serviceData, Toast.LENGTH_SHORT);
+            toast.show();
 
-                long now = System.currentTimeMillis();
-                Date date = new Date(now);
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                //SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmm");
-                String today = sdf.format(date);
-
-                common.log(today);
-
-                step_record_date =  common.getSP("step_record_date");
-
-                if(!step_record_date.equals(today)){
-                    common.putSP("step_record_date", today);
-                    StepValue.Step = 0;
-                    StepCheckService.count = 0;
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    toast.cancel();
                 }
+            }, 100);
 
-                String step_data = "{\"" + today + "\":" + serviceData + "}";
-
-                String data = "act=setStepInfo&step_data="+step_data;
-
-                String enc_data = Base64.encodeToString(data.getBytes(), 0);
-
-                common.log("jsNativeToServer(enc_data)");
-                webView.loadUrl("javascript:jsNativeToServer('" + enc_data + "')");
-            }
-
-
-            //Toast.makeText(getApplicationContext(), "Playing game", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -241,6 +225,23 @@ public class MainActivity extends Activity {
                 progressBar.setVisibility(View.INVISIBLE);
                 refreshLayout.setRefreshing(false);
 
+                if(url.contains("/step.php"))
+                {
+                    try {
+                        String step_data = makeStepData();
+                        common.log(step_data);
+
+                        String data = "act=setStepInfo&step_data="+step_data;
+                        String enc_data = Base64.encodeToString(data.getBytes(), 0);
+                        common.log("jsNativeToServer(enc_data) : step_data");
+                        webView.loadUrl("javascript:jsNativeToServer('" + enc_data + "')");
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
                 if(common.getSP("app_start_yn") == "Y")
                 {
                     sendDeviceInfo();
@@ -274,6 +275,32 @@ public class MainActivity extends Activity {
 
         webView.addJavascriptInterface(new JavaScriptInterface(), getResources().getString(R.string.js_name));
 
+    }
+
+    public String makeStepData() throws JSONException {
+        JSONObject json = new JSONObject();
+
+        int i=0;
+        for(i=0; i<30; i++) {
+            long now = System.currentTimeMillis() - (24*60*60*1000*i);
+            Date date = new Date(now);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String sel_date = sdf.format(date);
+
+            if(i==0) {
+                if(StepValue.Step>0) {
+                    json.put(sel_date, StepValue.Step);
+                }
+            }else{
+                String a = common.getSP(sel_date);
+                common.log(a);
+                if(!a.isEmpty()) {
+                    json.put(sel_date, a);
+                }
+            }
+        }
+
+        return json.toString();
     }
 
     private class JavaScriptInterface {
@@ -423,6 +450,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         Session.getCurrentSession().removeCallback(callback);
+        common.putSP("step_count", String.valueOf(StepValue.Step));
     }
     //카카오 로그인 끝
     ///////////////////////////////////////////////////////////////////////////////////////////////

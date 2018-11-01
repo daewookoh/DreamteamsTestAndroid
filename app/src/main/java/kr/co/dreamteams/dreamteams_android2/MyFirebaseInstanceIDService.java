@@ -64,6 +64,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
         ContentValues values = new ContentValues();
         values.put("action", "sendDeviceInfo");
+        values.put("app_name", "dreamteams");
         values.put("device_type", "Android");
         values.put("device_id", device_id);
         values.put("device_token", device_token);

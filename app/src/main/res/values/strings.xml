@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">드림팀즈</string>
-    <string name="default_url">http://m.dreamteams.co.kr</string>
-    <string name="api_url">http://m.dreamteams.co.kr/app/api.php</string>
-    <string name="sns_callback_url">http://m.dreamteams.co.kr/sns/callback_from_app.php</string>
+    <string name="default_url">https://m.dreamteams.co.kr/step.php</string>
+    <string name="api_url">https://m.dreamteams.co.kr/app/api.php</string>
+    <string name="sns_callback_url">https://m.dreamteams.co.kr/sns/callback_from_app.php</string>
     <string name="js_name">DreamteamsApp</string>
     <string name="user_agent">dreamteams_app_android</string>
 

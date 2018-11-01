@@ -77,7 +77,7 @@ public class IntroActivity extends Activity {
         }
         else {
 
-            getIntroImage();
+            //getIntroImage();
 
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
