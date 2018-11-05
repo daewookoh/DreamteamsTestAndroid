@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <!--카카오로그인용으로 android:name 부분 추가-->
     <application
@@ -22,7 +23,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".MainActivity" android:screenOrientation="portrait">
+        <activity android:name=".MainActivity" android:screenOrientation="portrait"
+            android:launchMode="singleInstance">
             <!--카카오공유-->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -91,7 +93,7 @@
         </service>
         <!--구글푸쉬 끝-->
 
-        <service android:name=".StepCheckService" android:enabled="true">
+        <service android:name=".StepCheckService" android:enabled="true" android:exported="true">
             <intent-filter>
                 <action android:name="app.manbo.Service"/>
             </intent-filter>

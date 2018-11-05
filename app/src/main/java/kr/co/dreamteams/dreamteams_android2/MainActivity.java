@@ -673,4 +673,10 @@ public class MainActivity extends Activity {
         return;
 
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        webView.reload();
+    }
 }
