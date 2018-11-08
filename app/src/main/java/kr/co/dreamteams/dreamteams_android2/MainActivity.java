@@ -288,8 +288,8 @@ public class MainActivity extends Activity {
             String sel_date = sdf.format(date);
 
             if(i==0) {
-                if(StepValue.Step>0) {
-                    json.put(sel_date, StepValue.Step);
+                if(StepCheckService.count>0) {
+                    json.put(sel_date, StepCheckService.count);
                 }
             }else{
                 String a = common.getSP(sel_date);
@@ -450,7 +450,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         Session.getCurrentSession().removeCallback(callback);
-        common.putSP("step_count", String.valueOf(StepValue.Step));
+        common.putSP("step_count", String.valueOf(StepCheckService.count));
     }
     //카카오 로그인 끝
     ///////////////////////////////////////////////////////////////////////////////////////////////

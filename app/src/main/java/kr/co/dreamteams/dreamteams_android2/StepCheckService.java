@@ -32,7 +32,7 @@ public class StepCheckService extends Service implements SensorEventListener {
 
     Common common = new Common(this);
 
-    public static int count = StepValue.Step;
+    public static int count = 0;
 
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
@@ -41,9 +41,9 @@ public class StepCheckService extends Service implements SensorEventListener {
     private static final int VEL_RING_SIZE = 10;
 
     // change this threshold according to your sensitivity preferences
-    private static final float STEP_THRESHOLD = 13;
+    private static final float STEP_THRESHOLD = 12;
 
-    private static final int STEP_DELAY_NS = 250000000;
+    private static final int STEP_DELAY_NS = 150000000;
 
     private int accelRingCounter = 0;
     private float[] accelRingX = new float[ACCEL_RING_SIZE];
@@ -111,6 +111,7 @@ public class StepCheckService extends Service implements SensorEventListener {
                 //.setContentTitle("드림팀즈")
                 .setContentText(text)
                 .setSound(null)
+                .setPriority(Notification.PRIORITY_MIN)
                 .setContentIntent(pendingIntent);
 
         startForeground(1, builder.build());
@@ -136,7 +137,7 @@ public class StepCheckService extends Service implements SensorEventListener {
         Log.i("onDestroy", "IN");
         if (sensorManager != null) {
             sensorManager.unregisterListener(this);
-            StepValue.Step = 0;
+            count = 0;
         } // end of if
     } // end of onDestroy
 
@@ -154,21 +155,21 @@ public class StepCheckService extends Service implements SensorEventListener {
         accelRingZ[accelRingCounter % ACCEL_RING_SIZE] = currentAccel[2];
 
         float[] worldZ = new float[3];
-        worldZ[0] = SensorFilter.sum(accelRingX) / Math.min(accelRingCounter, ACCEL_RING_SIZE);
-        worldZ[1] = SensorFilter.sum(accelRingY) / Math.min(accelRingCounter, ACCEL_RING_SIZE);
-        worldZ[2] = SensorFilter.sum(accelRingZ) / Math.min(accelRingCounter, ACCEL_RING_SIZE);
+        worldZ[0] = this.sum(accelRingX) / Math.min(accelRingCounter, ACCEL_RING_SIZE);
+        worldZ[1] = this.sum(accelRingY) / Math.min(accelRingCounter, ACCEL_RING_SIZE);
+        worldZ[2] = this.sum(accelRingZ) / Math.min(accelRingCounter, ACCEL_RING_SIZE);
 
-        float normalization_factor = SensorFilter.norm(worldZ);
+        float normalization_factor = this.norm(worldZ);
 
         worldZ[0] = worldZ[0] / normalization_factor;
         worldZ[1] = worldZ[1] / normalization_factor;
         worldZ[2] = worldZ[2] / normalization_factor;
 
-        float currentZ = SensorFilter.dot(worldZ, currentAccel) - normalization_factor;
+        float currentZ = this.dot(worldZ, currentAccel) - normalization_factor;
         velRingCounter++;
         velRing[velRingCounter % VEL_RING_SIZE] = currentZ;
 
-        float velocityEstimate = SensorFilter.sum(velRing);
+        float velocityEstimate = this.sum(velRing);
 
         if (velocityEstimate > 5) {
             //common.log("vel : " + velocityEstimate);
@@ -199,10 +200,10 @@ public class StepCheckService extends Service implements SensorEventListener {
 
     private void reportStep(){
 
-        //Intent myFilteredResponse = new Intent("make.a.yong.manbo");
-        count++;
-        StepValue.Step = count;
 
+        count++;
+
+        //Intent myFilteredResponse = new Intent("make.a.yong.manbo");
         //String msg = StepValue.Step + "";
         //myFilteredResponse.putExtra("stepService", "오늘 걸음수 : " + msg);
 
@@ -226,12 +227,33 @@ public class StepCheckService extends Service implements SensorEventListener {
                 common.putSP(lastday,String.valueOf(count));
                 common.putSP("step_record_date", today);
                 common.putSP("step_count", "0");
-                StepValue.Step = 0;
                 count = 0;
             }
 
         }
 
+    }
+
+    public static float sum(float[] array) {
+        float retval = 0;
+        for (int i = 0; i < array.length; i++) {
+            retval += array[i];
+        }
+        return retval;
+    }
+
+    public static float norm(float[] array) {
+        float retval = 0;
+        for (int i = 0; i < array.length; i++) {
+            retval += array[i] * array[i];
+        }
+        return (float) Math.sqrt(retval);
+    }
+
+
+    public static float dot(float[] a, float[] b) {
+        float retval = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+        return retval;
     }
 
     @Override
